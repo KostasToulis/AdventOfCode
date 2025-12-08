@@ -1,5 +1,6 @@
 from itertools import zip_longest, product
 import math
+import numpy as np
 
 def apply_operation(oper, numbers):
     if oper == '+':
@@ -9,28 +10,38 @@ def apply_operation(oper, numbers):
 
 
 if __name__ == '__main__':
-    with open('sample.txt', 'r') as file:
+    with open('input.txt', 'r') as file:
         input_data = file.readlines()
     cols = [col for col in zip_longest(*input_data, fillvalue='')]
-    print(cols)
 
+
+    cols = list(map(lambda x: [c.rstrip('\n') for c in x], cols))
+    cols = np.array(cols)
+    cols = cols.T
 
     numbers = []
     result = 0
     oper = ''
-    for i, col in enumerate(cols):
-        if col[-1].strip() != '':
+
+    y = len(cols)
+    x = len(cols[0])
+
+    for i in range(x):
+        if cols[-1, i].strip() != '':
             numbers = []
-            oper = col[-1].strip()
-        numbers.append(col[:-1])
-        if i < len(cols)-1 and cols[i+1][-1].strip() != '':
-            # print(numbers)
-            data = [int(''.join(row)) for row in zip(*numbers)]
+            oper = cols[-1, i].strip()
+        numbers.append(cols[:-1, i])
+        if i < x-1 and cols[-1, i+1].strip() != '':
+            numbers = [row for row in numbers if any(cell.strip() != '' for cell in row)]
+
+            data = [int(''.join(row)) for row in numbers]
 
             print(f'Applying operation {oper} to {data}')
             result += apply_operation(oper, data)
-        if i == len(cols)-1:
-            data = [int(''.join(row)) for row in zip(*numbers)]
+        if i == x-1:
+            numbers = [row for row in numbers if any(cell.strip() != '' for cell in row)]
+
+            data = [int(''.join(row)) for row in numbers]
             print(f'Applying operation {oper} to {data}')
             result += apply_operation(oper, data)
     print(result)
